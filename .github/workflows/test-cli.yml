@@ -1,6 +1,7 @@
 name: CLI Tests
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main, 0.x]
     paths:
@@ -10,13 +11,18 @@ on:
       - 'packages/loggers/**'
       - '.github/workflows/test-cli.yml'
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    # Only run on the main repository, not on forks
-    if: ${{ github.repository == 'mastra-ai/mastra' }}
+    # Only run on the main repository, not on forks (except this specific fork)
+    if: ${{ github.repository == 'mastra-ai/mastra' || github.repository == 'eafonso/mastra' }}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
 
       - name: Setup pnpm and Node.js
         uses: ./.github/actions/setup-pnpm-node
@@ -27,4 +33,4 @@ jobs:
       - name: Run CLI tests
         run: pnpm test:cli
         env:
-          NODE_OPTIONS: '--max_old_space_size=8096'
+          NODE_OPTIONS: "--max_old_space_size=8096"
